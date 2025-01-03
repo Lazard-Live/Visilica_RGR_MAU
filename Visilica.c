@@ -3,8 +3,8 @@
 #include <string.h>
 #include <time.h>
 
-// Массив со словами для отгадывания
-char *words[] = {
+// переменные
+char *words[] = { // Массив со словами для отгадывания
         "яблоко",
         "груша",
         "апельсин",
@@ -18,38 +18,36 @@ char *words[] = {
 int endGame = 0; // флаг завершения игры
 int help = 0; // флаг подсказки
 
-
-// Функция для проверки, является ли символ русской буквой
+// Функции
+// Проверка ввода. Допустима только кириллица.
 int cyrillicaTest(char c) {
     return (c >= 'а' && c <= 'я') || (c >= 'А' && c <= 'Я');
 }
 
+// Проверка запроса помощи от пользователя.
 int helpTest(int p) {
     if (p == '?') {
         help = 1;
         return 1;
     }
-
     return 0;
 }
 
-// Функция для проверки, была ли буква уже введена
-int letterTest(const char *guessed_word, char guess) {
-
-    for (int i = 0; guessed_word[i] != '\0'; ++i) {
-        if (help == 1) {
+// Функция для проверки, была ли буква уже введена ранее.
+int letterTest(const char *guessedWord, char guess) {
+    for (int i = 0; guessedWord[i] != '\0'; ++i) {
+        if (help == 1) { // исключаем из проверки буквы подсказки если включена подсказка
             if (i != 0) {
-                if (i != 2) { // исключаем из проверки буквы подсказки (через || не захотело работать)
-                    if (guessed_word[i] == guess) {
+                if (i != 2) {
+                    if (guessedWord[i] == guess) {
                         return 1;
                     }
                 }
             }
-        } else if (guessed_word[i] == guess) {
+        } else if (guessedWord[i] == guess) {
             return 1;
         }
     }
-
     return 0;
 }
 
@@ -59,29 +57,28 @@ int main() {
            "\n└─────────────────────────────────────────────┘"
            "\n           Цель: Отгадать слово                "
            "\n        (если слаб духом вводи - ?)          \n");
-
     srand(time(NULL)); // Инициализация генератора случайных чисел
 
-    int num_words = sizeof(words) / sizeof(char *);
-    char *word_to_guess = words[rand() % num_words]; // Выбираем случайное слово
+    int numWords = sizeof(words) / sizeof(char *);
+    char *wordToGuess = words[rand() % numWords]; // Выбираем случайное слово
 
-    int word_length = strlen(word_to_guess);
-    char guessed_word[word_length + 1];
-    memset(guessed_word, '_', word_length); // Заполняем массив подчеркиваниями
-    guessed_word[word_length] = '\0'; // Завершаем строку нулевым символом
+    int wordLength = strlen(wordToGuess);
+    char guessedWord[wordLength + 1];
+    memset(guessedWord, '_', wordLength); // Заполняем массив подчеркиваниями
+    guessedWord[wordLength] = '\0'; // Завершаем строку нулевым символом
 
 
-    int max_attempts = 6; // Максимальное количество попыток
-    int attempts_left = max_attempts;
-    int correct_guesses = 2; // Счетчик отгаданных буквы (изначально 2 т.к. включены буквы подсказки)
+    int maxAttempts = 6; // Максимальное количество попыток
+    int attemptsLeft = maxAttempts;
+    int correctGuesses = 2; // Счетчик отгаданных буквы (изначально 2 т.к. включены буквы подсказки)
 
-    while (attempts_left > 0 && correct_guesses != word_length) {
+    while (attemptsLeft > 0 && correctGuesses != wordLength) {
 
         printf("\n├──────────────────────────────────────────"
                "\n│ Осталось попыток: %d"
                "\n├──────────────────────────────────────────"
                "\n│ Отгадайте слово: %s"
-               "\n├──────────────────────────────────────────", attempts_left, guessed_word);
+               "\n├──────────────────────────────────────────", attemptsLeft, guessedWord);
 
         char guess;
         do {
@@ -91,44 +88,44 @@ int main() {
             printf(" %c", helpTest(guess));
             if (helpTest(guess)) {
                 // Добавление первой и третей буквы в качестве подсказок
-                guessed_word[0] = word_to_guess[0];
-                guessed_word[2] = word_to_guess[2];
+                guessedWord[0] = wordToGuess[0];
+                guessedWord[2] = wordToGuess[2];
                 printf("\n├──────────────────────────────────────────"
                        "\n│ Внимание! Активирована подсказка! Ах ты негодник!... :) "
                        "\n├──────────────────────────────────────────"
                        "\n│ Отгадайте слово: %s"
-                       "\n├──────────────────────────────────────────", guessed_word);
+                       "\n├──────────────────────────────────────────", guessedWord);
 
             } else if (!cyrillicaTest(guess)) { //Проверка на киррилицу
                 printf("\n├──────────────────────────────────────────"
                        "\n│ Пожалуйста, введите букву русского алфавита."
                        "\n├──────────────────────────────────────────");
-            } else if (letterTest(guessed_word, guess)) { //Проверка буквы в слове
+            } else if (letterTest(guessedWord, guess)) { //Проверка буквы в слове
                 printf("\n├──────────────────────────────────────────"
                        "\n│ Вы уже ввели эту букву. Попробуйте другую."
                        "\n├──────────────────────────────────────────");
             }
-        } while (!cyrillicaTest(guess) || letterTest(guessed_word, guess));
+        } while (!cyrillicaTest(guess) || letterTest(guessedWord, guess));
 
         // Цикл проверки буквы в заданном слове
         int found = 0;
-        for (int i = 0; i < word_length; ++i) {
+        for (int i = 0; i < wordLength; ++i) {
             if (i != 0) {
                 if (i != 2) {
-                    if (word_to_guess[i] == guess) { // Если в ячейке найдена буква то...
-                        guessed_word[i] = guess;
+                    if (wordToGuess[i] == guess) { // Если в ячейке найдена буква то...
+                        guessedWord[i] = guess;
                         found = 1;
-                        correct_guesses++;
+                        correctGuesses++;
                     }
                 }
             }
         }
 
         if (!found) {
-            attempts_left--;
+            attemptsLeft--;
             printf("\n├──────────────────────────────────────────"
                    "\n│ Неверная попытка! Осталось %d попыток."
-                   "\n├──────────────────────────────────────────", attempts_left);
+                   "\n├──────────────────────────────────────────", attemptsLeft);
         } else {
             printf("\n├──────────────────────────────────────────"
                    "\n│ Правильно! Буква добавлена в нужное место! ;) "
@@ -136,14 +133,14 @@ int main() {
         }
     }
 
-    if (correct_guesses == word_length) {
+    if (correctGuesses == wordLength) {
         printf("\n├──────────────────────────────────────────"
                "\n│ Поздравляем! Вы отгадали слово: %s"
-               "\n├──────────────────────────────────────────", word_to_guess);
+               "\n├──────────────────────────────────────────", wordToGuess);
     } else {
         printf("\n├──────────────────────────────────────────"
                "\n│ К сожалению, вы проиграли. Правильное слово было: %s"
-               "\n├──────────────────────────────────────────", word_to_guess);
+               "\n├──────────────────────────────────────────", wordToGuess);
     }
 
     printf("\n┌─────────────────────────────────────────────┐"
@@ -155,6 +152,4 @@ int main() {
     getchar();
 
     return 0;
-
-
 }
